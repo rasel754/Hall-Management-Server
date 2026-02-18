@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json", // Inherit basic settings
+  "compilerOptions": {
+    "module": "NodeNext", // 🎯 Use modern Node module type
+    "moduleResolution": "NodeNext", // 🎯 Use modern Node resolution
+    "rootDir": "./src", // The source root for compilation
+    "outDir": "./dist",
+    "noEmit": false, // Must emit JS files for Vercel's Node runtime
+    "isolatedModules": false // Not needed for a Node backend build
+  },
+  "include": [
+    "src/**/*" // Only include the backend source code
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
