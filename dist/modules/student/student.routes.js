@@ -1,0 +1,27 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const student_controller_1 = __importDefault(require("./student.controller"));
+const auth_middleware_1 = require("../../middlewares/auth.middleware");
+const validateRequest_1 = require("../../middlewares/validateRequest");
+const student_validation_1 = require("./student.validation");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.verifyToken, auth_middleware_1.checkBlocked, (0, auth_middleware_1.requireRole)("student"));
+router.get("/profile", student_controller_1.default.getProfile);
+router.put("/profile", (0, validateRequest_1.validateRequest)(student_validation_1.updateProfileSchema), student_controller_1.default.updateProfile);
+router.get("/room", student_controller_1.default.getCurrentRoom);
+router.get("/bookings", student_controller_1.default.getBookings);
+router.post("/bookings", (0, validateRequest_1.validateRequest)(student_validation_1.createBookingSchema), student_controller_1.default.createBookingRequest);
+router.delete("/bookings/:id", student_controller_1.default.cancelBooking);
+router.get("/complaints", student_controller_1.default.getComplaints);
+router.post("/complaints", (0, validateRequest_1.validateRequest)(student_validation_1.createComplaintSchema), student_controller_1.default.createComplaint);
+router.get("/complaints/:id", student_controller_1.default.getComplaintById);
+router.get("/notices", student_controller_1.default.getActiveNotices);
+router.get("/notices/:id", student_controller_1.default.getNoticeById);
+router.get("/payments", student_controller_1.default.getPayments);
+router.post("/payments/pay/:id", student_controller_1.default.makePayment);
+router.post("/payments/:id/pay", student_controller_1.default.makePayment);
+exports.default = router;

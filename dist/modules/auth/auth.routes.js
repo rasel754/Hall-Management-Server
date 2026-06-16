@@ -1,0 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_controller_1 = __importDefault(require("./auth.controller"));
+const validateRequest_1 = require("../../middlewares/validateRequest");
+const auth_validation_1 = require("./auth.validation");
+const auth_middleware_1 = require("../../middlewares/auth.middleware");
+const rateLimiter_1 = require("../../middlewares/rateLimiter");
+const router = (0, express_1.Router)();
+router.use(rateLimiter_1.authLimiter);
+router.post("/register", (0, validateRequest_1.validateRequest)(auth_validation_1.registerSchema), auth_controller_1.default.register);
+router.post("/login", (0, validateRequest_1.validateRequest)(auth_validation_1.loginSchema), auth_controller_1.default.login);
+router.post("/logout", auth_controller_1.default.logout);
+router.post("/forgot-password", (0, validateRequest_1.validateRequest)(auth_validation_1.forgotPasswordSchema), auth_controller_1.default.forgotPassword);
+router.post("/reset-password/:token", (0, validateRequest_1.validateRequest)(auth_validation_1.resetPasswordSchema), auth_controller_1.default.resetPassword);
+router.get("/me", auth_middleware_1.verifyToken, auth_middleware_1.checkBlocked, auth_controller_1.default.getMe);
+router.put("/change-password", auth_middleware_1.verifyToken, auth_middleware_1.checkBlocked, (0, validateRequest_1.validateRequest)(auth_validation_1.changePasswordSchema), auth_controller_1.default.changePassword);
+exports.default = router;

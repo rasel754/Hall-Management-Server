@@ -1,27 +1,38 @@
-import type { Request, Response, NextFunction } from "express"
-import type { ZodSchema } from "zod"
-import StatusCodes from "http-status-codes"
+import { Request, Response, NextFunction } from "express";
+import { ZodSchema } from "zod";
 
 export const validateRequest = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      schema.parse({
+      const parsed = await schema.parseAsync({
         body: req.body,
-        params: req.params,
         query: req.query,
-      })
-      return next()
+        params: req.params,
+      });
+      req.body = parsed.body;
+      if (parsed.query) {
+        Object.defineProperty(req, "query", {
+          value: parsed.query,
+          writable: true,
+          configurable: true,
+          enumerable: true,
+        });
+      }
+      if (parsed.params) {
+        Object.defineProperty(req, "params", {
+          value: parsed.params,
+          writable: true,
+          configurable: true,
+          enumerable: true,
+        });
+      }
+      next();
     } catch (error: any) {
-      const formattedErrors = error.errors.map((err: any) => ({
-        path: err.path.join("."),
-        message: err.message,
-      }))
-
-      return res.status(StatusCodes.BAD_REQUEST).json({
+      res.status(400).json({
         success: false,
-        message: "Validation failed",
-        data: formattedErrors,
-      })
+        message: "Validation Error",
+        errors: error.format ? error.format() : error.errors || error.message,
+      });
     }
-  }
-}
+  };
+};

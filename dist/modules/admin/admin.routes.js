@@ -1,0 +1,34 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_controller_1 = __importDefault(require("./admin.controller"));
+const auth_middleware_1 = require("../../middlewares/auth.middleware");
+const validateRequest_1 = require("../../middlewares/validateRequest");
+const admin_validation_1 = require("./admin.validation");
+const room_routes_1 = __importDefault(require("../room/room.routes"));
+const booking_routes_1 = __importDefault(require("../booking/booking.routes"));
+const complaint_routes_1 = __importDefault(require("../complaint/complaint.routes"));
+const notice_routes_1 = __importDefault(require("../notice/notice.routes"));
+const payment_routes_1 = __importDefault(require("../payment/payment.routes"));
+const complaint_controller_1 = __importDefault(require("../complaint/complaint.controller"));
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.verifyToken, auth_middleware_1.checkBlocked, (0, auth_middleware_1.requireRole)("admin"));
+router.get("/dashboard", admin_controller_1.default.getDashboardStats);
+router.get("/analytics", admin_controller_1.default.getAnalytics);
+router.get("/students", admin_controller_1.default.getStudentsList);
+router.get("/students/:id", admin_controller_1.default.getStudentDetail);
+router.delete("/students/:id", admin_controller_1.default.deleteStudentAccount);
+router.put("/students/:id/block", (0, validateRequest_1.validateRequest)(admin_validation_1.blockStudentSchema), admin_controller_1.default.blockStudent);
+router.put("/students/:id/unblock", admin_controller_1.default.unblockStudent);
+// Client compatibility routes
+router.patch("/block-user/:id", admin_controller_1.default.blockStudent);
+router.patch("/solve-complaint/:id", complaint_controller_1.default.updateComplaintStatus);
+router.use("/rooms", room_routes_1.default);
+router.use("/bookings", booking_routes_1.default);
+router.use("/complaints", complaint_routes_1.default);
+router.use("/notices", notice_routes_1.default);
+router.use("/payments", payment_routes_1.default);
+exports.default = router;
