@@ -7,7 +7,8 @@ import { requestLogger } from "./middlewares/requestLogger";
 import { apiLimiter } from "./middlewares/rateLimiter";
 import { notFound } from "./middlewares/notFound";
 import { errorHandler } from "./middlewares/errorHandler";
-import { env } from "./config/env";
+import { env, envError } from "./config/env";
+import { connectDB } from "./config/db";
 
 import authRoutes from "./modules/auth/auth.routes";
 import studentRoutes from "./modules/student/student.routes";
@@ -28,6 +29,29 @@ app.use(cors(corsOptions));
 // Parsing body
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Database connection and environment configuration check middleware
+app.use(async (req, res, next) => {
+  if (envError) {
+    res.status(500).json({
+      success: false,
+      message: "Server environment configuration error",
+      errors: envError.format(),
+    });
+    return;
+  }
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("Database connection failure in middleware:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database connection failure. Please try again later.",
+      error: env.NODE_ENV === "development" ? (error as Error).message : undefined,
+    });
+  }
+});
 
 // Morgan logger
 app.use(requestLogger);

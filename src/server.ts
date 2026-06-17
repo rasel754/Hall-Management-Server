@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import app from "./app";
 import { connectDB } from "./config/db";
 import { env } from "./config/env";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 let server: any;
 
@@ -10,18 +9,19 @@ async function startServer() {
   try {
     await connectDB();
     
-    if (env.NODE_ENV !== "production" || !process.env.VERCEL) {
-      server = app.listen(env.PORT, () => {
-        console.log(`🚀 Server is running on port ${env.PORT} in ${env.NODE_ENV} mode`);
-      });
-    }
+    server = app.listen(env.PORT, () => {
+      console.log(`🚀 Server is running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+    });
   } catch (error) {
     console.error("❌ Failed to start server:", error);
     process.exit(1);
   }
 }
 
-startServer();
+// Start the HTTP server locally (not in a Vercel serverless environment)
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 const gracefulShutdown = async (signal: string) => {
   console.log(`\n⚠️ ${signal} received. Initiating graceful shutdown...`);
@@ -45,7 +45,4 @@ const gracefulShutdown = async (signal: string) => {
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  await connectDB();
-  return app(req, res);
-}
+export default app;

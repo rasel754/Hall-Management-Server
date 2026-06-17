@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = handler;
 const mongoose_1 = __importDefault(require("mongoose"));
 const app_1 = __importDefault(require("./app"));
 const db_1 = require("./config/db");
@@ -12,18 +11,19 @@ let server;
 async function startServer() {
     try {
         await (0, db_1.connectDB)();
-        if (env_1.env.NODE_ENV !== "production" || !process.env.VERCEL) {
-            server = app_1.default.listen(env_1.env.PORT, () => {
-                console.log(`🚀 Server is running on port ${env_1.env.PORT} in ${env_1.env.NODE_ENV} mode`);
-            });
-        }
+        server = app_1.default.listen(env_1.env.PORT, () => {
+            console.log(`🚀 Server is running on port ${env_1.env.PORT} in ${env_1.env.NODE_ENV} mode`);
+        });
     }
     catch (error) {
         console.error("❌ Failed to start server:", error);
         process.exit(1);
     }
 }
-startServer();
+// Start the HTTP server locally (not in a Vercel serverless environment)
+if (!process.env.VERCEL) {
+    startServer();
+}
 const gracefulShutdown = async (signal) => {
     console.log(`\n⚠️ ${signal} received. Initiating graceful shutdown...`);
     if (server) {
@@ -43,7 +43,4 @@ const gracefulShutdown = async (signal) => {
 };
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-async function handler(req, res) {
-    await (0, db_1.connectDB)();
-    return (0, app_1.default)(req, res);
-}
+exports.default = app_1.default;

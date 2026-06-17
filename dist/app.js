@@ -13,6 +13,7 @@ const rateLimiter_1 = require("./middlewares/rateLimiter");
 const notFound_1 = require("./middlewares/notFound");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const env_1 = require("./config/env");
+const db_1 = require("./config/db");
 const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
 const student_routes_1 = __importDefault(require("./modules/student/student.routes"));
 const admin_routes_1 = __importDefault(require("./modules/admin/admin.routes"));
@@ -29,6 +30,29 @@ app.use((0, cors_1.default)(corsOptions_1.corsOptions));
 // Parsing body
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+// Database connection and environment configuration check middleware
+app.use(async (req, res, next) => {
+    if (env_1.envError) {
+        res.status(500).json({
+            success: false,
+            message: "Server environment configuration error",
+            errors: env_1.envError.format(),
+        });
+        return;
+    }
+    try {
+        await (0, db_1.connectDB)();
+        next();
+    }
+    catch (error) {
+        console.error("Database connection failure in middleware:", error);
+        res.status(500).json({
+            success: false,
+            message: "Database connection failure. Please try again later.",
+            error: env_1.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+    }
+});
 // Morgan logger
 app.use(requestLogger_1.requestLogger);
 // Global API rate limiting

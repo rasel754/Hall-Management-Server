@@ -85,7 +85,7 @@ MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/hall-ms?retry
 JWT_SECRET=your_super_secret_jwt_key_here
 
 # Frontend Application Origin (For CORS)
-FRONTEND_ORIGIN=http://localhost:5173
+FRONTEND_ORIGIN=https://hall-mangement-client.vercel.app
 ```
 
 ## 🛡️ Error Handling & Security
