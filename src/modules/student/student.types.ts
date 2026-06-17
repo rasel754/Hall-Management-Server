@@ -19,6 +19,7 @@ export interface IUser {
   avatar?: string;
   emergencyContact?: IEmergencyContact;
   isBlocked: boolean;
+  blocked?: boolean;
   blockReason?: string;
   createdAt: Date;
   updatedAt: Date;

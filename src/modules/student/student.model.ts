@@ -63,8 +63,15 @@ const userSchema = new Schema<IUserDocument>(
   {
     timestamps: true,
     versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+// Virtual for blocked status, matching the client's expected field name ('blocked' instead of 'isBlocked')
+userSchema.virtual("blocked").get(function (this: any) {
+  return this.isBlocked;
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
