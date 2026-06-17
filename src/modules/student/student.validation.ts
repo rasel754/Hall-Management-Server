@@ -20,7 +20,11 @@ export const updateProfileSchema = z.object({
 export const createBookingSchema = z.object({
   body: z.object({
     roomId: z.string().min(1, "roomId is required"),
-    moveInDate: z.string().or(z.date()).transform((val) => new Date(val)),
+    moveInDate: z.string().or(z.date()).optional(),
+    startDate: z.string().or(z.date()).optional(),
+  }).refine((data) => data.moveInDate || data.startDate, {
+    message: "Either moveInDate or startDate is required",
+    path: ["moveInDate"],
   }),
 });
 

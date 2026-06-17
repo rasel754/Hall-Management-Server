@@ -21,7 +21,11 @@ exports.updateProfileSchema = zod_1.z.object({
 exports.createBookingSchema = zod_1.z.object({
     body: zod_1.z.object({
         roomId: zod_1.z.string().min(1, "roomId is required"),
-        moveInDate: zod_1.z.string().or(zod_1.z.date()).transform((val) => new Date(val)),
+        moveInDate: zod_1.z.string().or(zod_1.z.date()).optional(),
+        startDate: zod_1.z.string().or(zod_1.z.date()).optional(),
+    }).refine((data) => data.moveInDate || data.startDate, {
+        message: "Either moveInDate or startDate is required",
+        path: ["moveInDate"],
     }),
 });
 exports.createComplaintSchema = zod_1.z.object({

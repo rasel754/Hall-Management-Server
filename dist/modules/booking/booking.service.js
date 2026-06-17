@@ -43,7 +43,8 @@ const approveBooking = async (bookingId, adminId) => {
     if (booking.status !== "pending") {
         throw new ApiError_1.ApiError(400, `Booking is already ${booking.status}`);
     }
-    const room = await room_model_1.Room.findById(booking.room);
+    const roomField = booking.room || booking.get('roomId');
+    const room = await room_model_1.Room.findById(roomField);
     if (!room) {
         throw new ApiError_1.ApiError(404, "Room not found");
     }
@@ -56,6 +57,16 @@ const approveBooking = async (bookingId, adminId) => {
     booking.approvalDate = new Date();
     booking.approvedBy = new mongoose_1.default.Types.ObjectId(adminId);
     booking.moveInDate = new Date();
+    // Handle old schema database compatibility
+    if (!booking.student && booking.get('studentId')) {
+        booking.student = booking.get('studentId');
+    }
+    if (!booking.room && booking.get('roomId')) {
+        booking.room = booking.get('roomId');
+    }
+    if (!booking.moveInDate && booking.get('startDate')) {
+        booking.moveInDate = booking.get('startDate');
+    }
     await booking.save();
     room.currentOccupancy += 1;
     if (room.currentOccupancy >= room.capacity) {
@@ -92,6 +103,16 @@ const rejectBooking = async (bookingId, reason, adminId) => {
     booking.approvalDate = new Date();
     booking.cancellationReason = reason;
     booking.cancellationDate = new Date();
+    // Handle old schema database compatibility
+    if (!booking.student && booking.get('studentId')) {
+        booking.student = booking.get('studentId');
+    }
+    if (!booking.room && booking.get('roomId')) {
+        booking.room = booking.get('roomId');
+    }
+    if (!booking.moveInDate && booking.get('startDate')) {
+        booking.moveInDate = booking.get('startDate');
+    }
     await booking.save();
     return booking;
 };

@@ -26,8 +26,9 @@ export const getBookings = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const createBookingRequest = catchAsync(async (req: Request, res: Response) => {
-  const { roomId, moveInDate } = req.body;
-  const result = await studentService.createBookingRequest(req.user!.id, roomId, moveInDate);
+  const { roomId, moveInDate, startDate } = req.body;
+  const finalMoveInDate = new Date(moveInDate || startDate || Date.now());
+  const result = await studentService.createBookingRequest(req.user!.id, roomId, finalMoveInDate);
   res.status(201).json(new ApiResponse("Booking request created successfully", result));
 });
 

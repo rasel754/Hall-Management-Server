@@ -25,8 +25,9 @@ exports.getBookings = (0, catchAsync_1.catchAsync)(async (req, res) => {
     res.status(200).json(new ApiResponse_1.ApiResponse("Booking history fetched successfully", result));
 });
 exports.createBookingRequest = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const { roomId, moveInDate } = req.body;
-    const result = await student_service_1.default.createBookingRequest(req.user.id, roomId, moveInDate);
+    const { roomId, moveInDate, startDate } = req.body;
+    const finalMoveInDate = new Date(moveInDate || startDate || Date.now());
+    const result = await student_service_1.default.createBookingRequest(req.user.id, roomId, finalMoveInDate);
     res.status(201).json(new ApiResponse_1.ApiResponse("Booking request created successfully", result));
 });
 exports.cancelBooking = (0, catchAsync_1.catchAsync)(async (req, res) => {
