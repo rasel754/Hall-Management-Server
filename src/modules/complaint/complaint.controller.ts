@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { ApiResponse } from "../../utils/ApiResponse";
+import { ApiError } from "../../utils/ApiError";
 import complaintService from "./complaint.service";
 import { getPaginationParams, getPaginationMeta } from "../../utils/pagination";
 
@@ -16,7 +17,10 @@ export const getComplaints = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const updateComplaintStatus = catchAsync(async (req: Request, res: Response) => {
-  const { status, adminNote } = req.body;
+  const { status, adminNote } = req.body || {};
+  if (!status) {
+    throw new ApiError(400, "Status is required");
+  }
   const result = await complaintService.updateComplaintStatus(req.params.id, status, adminNote, req.user!.id);
   res.status(200).json(new ApiResponse("Complaint status updated successfully", result));
 });

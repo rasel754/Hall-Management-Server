@@ -29,23 +29,22 @@ const updateComplaintStatus = async (complaintId, status, adminNote, adminId) =>
     if (!mongoose_1.default.isValidObjectId(complaintId)) {
         throw new ApiError_1.ApiError(400, "Invalid Complaint ID");
     }
-    const complaint = await complaint_model_1.Complaint.findById(complaintId);
+    const updateDoc = { status };
+    if (adminNote !== undefined) {
+        updateDoc.adminNote = adminNote;
+    }
+    if (status === "resolved") {
+        updateDoc.resolvedBy = new mongoose_1.default.Types.ObjectId(adminId);
+        updateDoc.resolvedAt = new Date();
+    }
+    else {
+        updateDoc.resolvedBy = null;
+        updateDoc.resolvedAt = null;
+    }
+    const complaint = await complaint_model_1.Complaint.findByIdAndUpdate(complaintId, { $set: updateDoc }, { new: true, runValidators: true });
     if (!complaint) {
         throw new ApiError_1.ApiError(404, "Complaint not found");
     }
-    complaint.status = status;
-    if (adminNote !== undefined) {
-        complaint.adminNote = adminNote;
-    }
-    if (status === "resolved") {
-        complaint.resolvedBy = new mongoose_1.default.Types.ObjectId(adminId);
-        complaint.resolvedAt = new Date();
-    }
-    else {
-        complaint.resolvedBy = undefined;
-        complaint.resolvedAt = undefined;
-    }
-    await complaint.save();
     return complaint;
 };
 exports.updateComplaintStatus = updateComplaintStatus;

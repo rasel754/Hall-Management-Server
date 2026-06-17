@@ -33,7 +33,26 @@ const getCurrentRoom = async (studentId) => {
         student: studentId,
         status: { $in: ["approved", "active"] },
     }).populate("room");
-    return activeBooking ? activeBooking.room : null;
+    if (!activeBooking || !activeBooking.room)
+        return null;
+    const room = activeBooking.room;
+    const roomId = room._id || room;
+    // Fetch roommates (other students who have approved or active bookings in the same room)
+    const roommatesBookings = await booking_model_1.Booking.find({
+        room: roomId,
+        status: { $in: ["approved", "active"] },
+        student: { $ne: studentId }, // Exclude current student
+    }).populate("student", "name email avatar studentId department year phone");
+    const roommates = roommatesBookings
+        .map((b) => b.student)
+        .filter((s) => s !== null && s !== undefined);
+    const roomObj = room.toObject ? room.toObject() : room;
+    return {
+        ...roomObj,
+        roommates,
+        allocationDate: activeBooking.approvalDate || activeBooking.createdAt || activeBooking.moveInDate || activeBooking.get("startDate"),
+        activeBookingId: activeBooking._id,
+    };
 };
 exports.getCurrentRoom = getCurrentRoom;
 const getBookings = async (studentId) => {
@@ -67,7 +86,7 @@ const createBookingRequest = async (studentId, roomId, moveInDate) => {
     return booking;
 };
 exports.createBookingRequest = createBookingRequest;
-const cancelBooking = async (studentId, bookingId) => {
+const cancelBooking = async (studentId, bookingId, cancellationReason) => {
     if (!mongoose_1.default.isValidObjectId(bookingId)) {
         throw new ApiError_1.ApiError(400, "Invalid Booking ID");
     }
@@ -75,13 +94,30 @@ const cancelBooking = async (studentId, bookingId) => {
     if (!booking) {
         throw new ApiError_1.ApiError(404, "Booking request not found");
     }
-    if (booking.status !== "pending") {
-        throw new ApiError_1.ApiError(400, "Only pending bookings can be cancelled");
+    if (booking.status !== "pending" && booking.status !== "approved" && booking.status !== "active") {
+        throw new ApiError_1.ApiError(400, "Only pending, approved or active bookings can be cancelled");
     }
+    const oldStatus = booking.status;
     booking.status = "cancelled";
     booking.cancellationDate = new Date();
-    booking.cancellationReason = "Cancelled by student";
+    booking.cancellationReason = cancellationReason || "Cancelled by student";
     await booking.save();
+    if (oldStatus === "approved" || oldStatus === "active") {
+        const roomId = booking.room || booking.get("roomId");
+        const room = await room_model_1.Room.findById(roomId);
+        if (room) {
+            room.currentOccupancy = Math.max(0, room.currentOccupancy - 1);
+            if (room.status !== "maintenance") {
+                if (room.currentOccupancy === 0) {
+                    room.status = "available";
+                }
+                else if (room.currentOccupancy < room.capacity) {
+                    room.status = "occupied";
+                }
+            }
+            await room.save();
+        }
+    }
     return booking;
 };
 exports.cancelBooking = cancelBooking;

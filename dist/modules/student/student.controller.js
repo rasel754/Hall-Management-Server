@@ -31,7 +31,11 @@ exports.createBookingRequest = (0, catchAsync_1.catchAsync)(async (req, res) => 
     res.status(201).json(new ApiResponse_1.ApiResponse("Booking request created successfully", result));
 });
 exports.cancelBooking = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const result = await student_service_1.default.cancelBooking(req.user.id, req.params.id);
+    const { reason, details } = req.body;
+    const cancellationReason = reason
+        ? `[${reason}] ${details || ""}`.trim()
+        : undefined;
+    const result = await student_service_1.default.cancelBooking(req.user.id, req.params.id, cancellationReason);
     res.status(200).json(new ApiResponse_1.ApiResponse("Booking cancelled successfully", result));
 });
 exports.getComplaints = (0, catchAsync_1.catchAsync)(async (req, res) => {

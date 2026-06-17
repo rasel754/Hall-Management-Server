@@ -33,8 +33,8 @@ exports.deleteStudentAccount = (0, catchAsync_1.catchAsync)(async (req, res) => 
     res.status(200).json(new ApiResponse_1.ApiResponse("Student account deleted successfully", result));
 });
 exports.blockStudent = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const { reason } = req.body;
-    const result = await admin_service_1.default.blockStudent(req.params.id, reason);
+    const { reason } = req.body || {};
+    const result = await admin_service_1.default.blockStudent(req.params.id, reason || "Administrative suspension");
     res.status(200).json(new ApiResponse_1.ApiResponse("Student blocked successfully", result));
 });
 exports.unblockStudent = (0, catchAsync_1.catchAsync)(async (req, res) => {

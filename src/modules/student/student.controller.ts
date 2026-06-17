@@ -33,7 +33,11 @@ export const createBookingRequest = catchAsync(async (req: Request, res: Respons
 });
 
 export const cancelBooking = catchAsync(async (req: Request, res: Response) => {
-  const result = await studentService.cancelBooking(req.user!.id, req.params.id);
+  const { reason, details } = req.body;
+  const cancellationReason = reason
+    ? `[${reason}] ${details || ""}`.trim()
+    : undefined;
+  const result = await studentService.cancelBooking(req.user!.id, req.params.id, cancellationReason);
   res.status(200).json(new ApiResponse("Booking cancelled successfully", result));
 });
 

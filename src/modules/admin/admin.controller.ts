@@ -35,8 +35,8 @@ export const deleteStudentAccount = catchAsync(async (req: Request, res: Respons
 });
 
 export const blockStudent = catchAsync(async (req: Request, res: Response) => {
-  const { reason } = req.body;
-  const result = await adminService.blockStudent(req.params.id, reason);
+  const { reason } = req.body || {};
+  const result = await adminService.blockStudent(req.params.id, reason || "Administrative suspension");
   res.status(200).json(new ApiResponse("Student blocked successfully", result));
 });
 

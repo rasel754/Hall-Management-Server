@@ -13,6 +13,7 @@ router.use(auth_middleware_1.verifyToken, auth_middleware_1.checkBlocked, (0, au
 router.get("/profile", student_controller_1.default.getProfile);
 router.put("/profile", (0, validateRequest_1.validateRequest)(student_validation_1.updateProfileSchema), student_controller_1.default.updateProfile);
 router.get("/room", student_controller_1.default.getCurrentRoom);
+router.get("/my-room", student_controller_1.default.getCurrentRoom);
 router.get("/bookings", student_controller_1.default.getBookings);
 router.post("/bookings", (0, validateRequest_1.validateRequest)(student_validation_1.createBookingSchema), student_controller_1.default.createBookingRequest);
 router.delete("/bookings/:id", student_controller_1.default.cancelBooking);

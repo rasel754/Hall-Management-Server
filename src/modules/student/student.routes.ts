@@ -12,6 +12,7 @@ router.get("/profile", studentController.getProfile);
 router.put("/profile", validateRequest(updateProfileSchema), studentController.updateProfile);
 
 router.get("/room", studentController.getCurrentRoom);
+router.get("/my-room", studentController.getCurrentRoom);
 
 router.get("/bookings", studentController.getBookings);
 router.post("/bookings", validateRequest(createBookingSchema), studentController.createBookingRequest);
